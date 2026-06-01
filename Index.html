@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eurogrip Monsoon Offer — The Bike Tyre Specialist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;0,900;1,700&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --blue: #0054a6; --blue-dark: #003d7a; --blue-light: #1a6fc4;
+    --red: #ed1c24; --red-dark: #c41018;
+    --salt: #615e61; --salt-light: #8a8789;
+    --white: #ffffff; --off-white: #f4f4f6;
+    --near-black: #111114; --card-bg: #ffffff; --border: rgba(0,0,0,0.08);
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Barlow', sans-serif; background: var(--near-black); color: var(--white); min-height: 100vh; overflow-x: hidden; }
+
+  #rainCanvas { position: fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; opacity:0; transition: opacity 2s ease; }
+  #rainCanvas.active { opacity:1; }
+
+  .hero { position:relative; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:2rem 1.5rem 3rem; z-index:1; text-align:center; overflow:hidden; }
+  .hero::before { content:''; position:absolute; top:0; left:-10%; right:-10%; height:6px; background:linear-gradient(90deg,var(--red) 0%,var(--red) 40%,var(--blue) 40%,var(--blue) 100%); z-index:10; }
+  .hero-bg { position:absolute; inset:0; background:repeating-linear-gradient(-20deg,transparent,transparent 18px,rgba(255,255,255,0.013) 18px,rgba(255,255,255,0.013) 20px); z-index:0; }
+  .hero-glow { position:absolute; width:600px; height:600px; border-radius:50%; background:radial-gradient(circle,rgba(0,84,166,0.35) 0%,transparent 70%); top:50%; left:50%; transform:translate(-50%,-55%); z-index:0; pointer-events:none; }
+  .hero-content { position:relative; z-index:2; max-width:700px; width:100%; }
+
+  .logo-wrap { margin-bottom:2.5rem; animation:fadeDown 0.6s ease both; }
+  .logo-svg { width:260px; filter:drop-shadow(0 2px 12px rgba(0,84,166,0.4)); }
+
+  .eyebrow { font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:600; letter-spacing:0.2em; text-transform:uppercase; color:var(--red); margin-bottom:0.75rem; display:flex; align-items:center; justify-content:center; gap:8px; animation:fadeDown 0.6s 0.1s ease both; }
+  .eyebrow-dot { width:6px; height:6px; border-radius:50%; background:var(--red); animation:blink 1.8s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  .main-headline { font-family:'Barlow Condensed',sans-serif; font-size:clamp(3rem,10vw,6.5rem); font-weight:900; line-height:0.95; text-transform:uppercase; letter-spacing:-0.01em; margin-bottom:0.5rem; animation:fadeDown 0.6s 0.15s ease both; }
+  .main-headline .line-blue { color:var(--blue); display:block; }
+  .main-headline .line-red { color:var(--red); display:block; font-style:italic; }
+  .main-headline .line-white { color:var(--white); display:block; }
+  .sub-headline { font-size:16px; font-weight:300; color:rgba(255,255,255,0.6); margin-bottom:2.5rem; line-height:1.6; animation:fadeDown 0.6s 0.2s ease both; }
+
+  @keyframes fadeDown { from{opacity:0;transform:translateY(-16px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+  @keyframes riseUp { from{opacity:0;transform:translateY(40px) scale(0.97)} to{opacity:1;transform:translateY(0) scale(1)} }
+  @keyframes spin { to{transform:rotate(360deg)} }
+
+  /* LOADING */
+  #loadingState { display:flex; flex-direction:column; align-items:center; gap:1rem; animation:fadeIn 0.4s ease both; }
+  .spinner-ring { width:48px; height:48px; border:2px solid rgba(255,255,255,0.1); border-top-color:var(--blue); border-right-color:var(--red); border-radius:50%; animation:spin 0.9s linear infinite; }
+  .loading-text { font-size:14px; color:rgba(255,255,255,0.5); letter-spacing:0.05em; }
+
+  /* OFFER CARD */
+  #offerState { display:none; width:100%; max-width:520px; margin:0 auto; }
+  .offer-card { background:var(--white); border-radius:20px; overflow:hidden; color:var(--near-black); box-shadow:0 32px 80px rgba(0,0,0,0.5),0 0 0 1px rgba(255,255,255,0.05); animation:riseUp 0.7s 0.1s cubic-bezier(0.22,1,0.36,1) both; }
+
+  .card-header { background:var(--near-black); padding:1.25rem 1.75rem; display:flex; align-items:center; justify-content:space-between; border-bottom:3px solid var(--blue); }
+  .card-header-left { display:flex; align-items:center; gap:10px; }
+  .live-badge { background:var(--red); color:var(--white); font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; padding:3px 9px; border-radius:4px; display:flex; align-items:center; gap:5px; }
+  .live-dot { width:5px; height:5px; border-radius:50%; background:#fff; animation:blink 1.4s infinite; }
+  .card-date { font-size:12px; color:rgba(255,255,255,0.45); }
+  .card-location { font-size:13px; font-weight:500; color:rgba(255,255,255,0.7); display:flex; align-items:center; gap:5px; }
+
+  .stats-row { display:grid; grid-template-columns:1fr 1px 1fr; align-items:center; padding:1.75rem; }
+  .stat-block { text-align:center; padding:0 1rem; }
+  .stat-divider { background:rgba(0,0,0,0.08); align-self:stretch; }
+  .stat-label { font-size:11px; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:var(--salt-light); margin-bottom:6px; }
+  .stat-icon { font-size:3rem; line-height:1; }
+  .stat-num { font-family:'Barlow Condensed',sans-serif; font-size:4.5rem; font-weight:900; line-height:1; color:var(--blue); }
+  .stat-num.disc { color:var(--red); }
+  .stat-unit { font-family:'Barlow Condensed',sans-serif; font-size:1.5rem; font-weight:700; vertical-align:super; }
+  .stat-sub { font-size:12px; color:var(--salt-light); margin-top:4px; }
+
+  .formula-strip { background:var(--off-white); padding:10px 1.75rem; text-align:center; font-size:13px; color:var(--salt); border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+  .formula-strip strong { color:var(--near-black); }
+
+  /* LEAD FORM (gate before voucher) */
+  .lead-section { padding:1.5rem 1.75rem; }
+  .lead-title { font-size:11px; font-weight:600; letter-spacing:0.15em; text-transform:uppercase; color:var(--salt-light); margin-bottom:4px; }
+  .lead-desc { font-size:13px; color:var(--salt); margin-bottom:1rem; line-height:1.5; }
+  .lead-field { width:100%; border:1.5px solid rgba(0,0,0,0.15); border-radius:10px; padding:10px 14px; font-family:'Barlow',sans-serif; font-size:15px; color:var(--near-black); outline:none; transition:border-color 0.2s; margin-bottom:10px; background:#fff; }
+  .lead-field:focus { border-color:var(--blue); }
+  .lead-field.error { border-color:var(--red); }
+  .lead-submit { width:100%; background:var(--blue); color:#fff; font-family:'Barlow Condensed',sans-serif; font-size:17px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; border:none; border-radius:10px; padding:13px; cursor:pointer; transition:background 0.2s,transform 0.1s; }
+  .lead-submit:hover { background:var(--blue-dark); }
+  .lead-submit:active { transform:scale(0.98); }
+  .lead-error { font-size:12px; color:var(--red); margin-top:-6px; margin-bottom:8px; display:none; }
+
+  /* VOUCHER (hidden until lead submitted) */
+  .voucher-section { padding:0 1.75rem 1.5rem; display:none; }
+  .voucher-title { font-size:11px; font-weight:600; letter-spacing:0.15em; text-transform:uppercase; color:var(--salt-light); margin-bottom:0.75rem; }
+  .voucher-box { border:2px dashed var(--blue); border-radius:12px; padding:1.25rem 1.5rem; text-align:center; background:#f0f6ff; }
+  .voucher-greeting { font-size:13px; color:var(--salt); margin-bottom:6px; }
+  .voucher-greeting strong { color:var(--near-black); }
+  .voucher-code { font-family:'Barlow Condensed',sans-serif; font-size:3rem; font-weight:900; letter-spacing:0.06em; color:var(--blue); line-height:1; margin-bottom:6px; }
+  .voucher-detail { font-size:13px; color:var(--salt); margin-bottom:12px; }
+  .screenshot-hint { display:inline-flex; align-items:center; gap:6px; background:var(--blue); color:#fff; font-size:12px; font-weight:600; letter-spacing:0.05em; text-transform:uppercase; padding:7px 16px; border-radius:6px; }
+  .voucher-expire { font-size:11px; color:var(--salt-light); margin-top:10px; text-align:center; }
+
+  .weather-row { display:flex; gap:8px; padding:0 1.75rem 1.5rem; flex-wrap:wrap; }
+  .w-chip { display:flex; align-items:center; gap:5px; background:var(--off-white); border:1px solid var(--border); border-radius:100px; padding:5px 12px; font-size:12px; color:var(--salt); }
+  .w-chip svg { width:14px; height:14px; fill:none; stroke:var(--blue); stroke-width:1.8; }
+  .offer-message { padding:0 1.75rem 1.5rem; font-size:14px; color:var(--salt); font-style:italic; text-align:center; line-height:1.5; }
+
+  /* STORE SECTION */
+  .store-section { padding:0 1rem 2rem; max-width:520px; margin:0 auto; animation:riseUp 0.7s 0.3s cubic-bezier(0.22,1,0.36,1) both; }
+  .section-label { font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:700; letter-spacing:0.2em; text-transform:uppercase; color:rgba(255,255,255,0.35); text-align:center; margin:0 0 1rem; display:flex; align-items:center; gap:10px; }
+  .section-label::before,.section-label::after { content:''; flex:1; height:1px; background:rgba(255,255,255,0.08); }
+  .store-card { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:1rem 1.25rem; margin-bottom:10px; display:grid; grid-template-columns:1fr auto; align-items:start; gap:0.75rem; transition:background 0.2s; }
+  .store-card:hover { background:rgba(255,255,255,0.07); }
+  .store-name { font-family:'Barlow Condensed',sans-serif; font-size:17px; font-weight:700; color:#fff; display:flex; align-items:center; gap:8px; margin-bottom:3px; }
+  .coco-tag { background:var(--blue); color:#fff; font-size:9px; font-weight:700; letter-spacing:0.1em; padding:2px 6px; border-radius:3px; }
+  .store-addr { font-size:12px; color:rgba(255,255,255,0.45); line-height:1.55; margin-bottom:6px; }
+  .store-phone { font-size:13px; color:var(--blue); font-weight:500; display:flex; align-items:center; gap:5px; text-decoration:none; }
+  .store-phone:hover { color:var(--blue-light); }
+  .store-dist { font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:600; color:rgba(255,255,255,0.3); white-space:nowrap; padding-top:3px; }
+
+  .ecomm-card { background:var(--blue); border-radius:14px; padding:1.5rem; text-align:center; margin-bottom:10px; }
+  .ecomm-card h3 { font-family:'Barlow Condensed',sans-serif; font-size:1.4rem; font-weight:800; text-transform:uppercase; margin-bottom:6px; letter-spacing:0.02em; }
+  .ecomm-card p { font-size:13px; color:rgba(255,255,255,0.75); margin-bottom:1rem; line-height:1.5; }
+  .ecomm-btn { display:inline-block; background:#fff; color:var(--blue); font-family:'Barlow Condensed',sans-serif; font-size:15px; font-weight:800; text-transform:uppercase; letter-spacing:0.08em; padding:12px 28px; border-radius:8px; text-decoration:none; border:none; cursor:pointer; transition:transform 0.15s,box-shadow 0.15s; }
+  .ecomm-btn:hover { transform:translateY(-1px); box-shadow:0 8px 24px rgba(0,0,0,0.25); }
+  .store-cities-note { text-align:center; font-size:11px; color:rgba(255,255,255,0.25); margin-top:8px; line-height:1.6; }
+
+  /* DATA SOURCE NOTE */
+  .source-note { text-align:center; font-size:11px; color:rgba(255,255,255,0.2); margin-top:1rem; display:flex; align-items:center; justify-content:center; gap:5px; }
+  .source-dot { width:5px; height:5px; border-radius:50%; background:rgba(255,255,255,0.2); }
+
+  /* ERROR */
+  #errorState { display:none; text-align:center; padding:1rem; animation:fadeIn 0.4s ease both; }
+  .error-text { font-size:14px; color:rgba(255,255,255,0.5); margin-bottom:1.25rem; line-height:1.6; }
+  .retry-btn { background:none; border:1px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.7); font-family:'Barlow',sans-serif; font-size:13px; padding:8px 20px; border-radius:8px; cursor:pointer; transition:all 0.2s; }
+  .retry-btn:hover { background:rgba(255,255,255,0.08); color:#fff; }
+
+  footer { position:relative; z-index:1; text-align:center; padding:2rem 1rem 3rem; border-top:1px solid rgba(255,255,255,0.06); }
+  .footer-logo-text { font-family:'Barlow Condensed',sans-serif; font-size:18px; font-weight:800; letter-spacing:0.08em; color:rgba(255,255,255,0.2); text-transform:uppercase; margin-bottom:6px; }
+  .footer-logo-text span { color:var(--blue); }
+  .footer-tagline { font-size:11px; color:rgba(255,255,255,0.15); letter-spacing:0.12em; text-transform:uppercase; }
+  .footer-terms { font-size:11px; color:rgba(255,255,255,0.2); margin-top:1rem; line-height:1.7; }
+
+  @media (max-width:480px) {
+    .stats-row { padding:1.25rem 1rem; }
+    .stat-num { font-size:3.5rem; }
+    .lead-section,.voucher-section,.weather-row,.offer-message { padding-left:1.25rem; padding-right:1.25rem; }
+    .voucher-code { font-size:2.4rem; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="rainCanvas"></canvas>
+
+<main class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-content">
+
+    <div class="logo-wrap">
+      <img src="data:image/png;base64,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" alt="Eurogrip" style="width:340px; mix-blend-mode:screen;">
+    </div>
+
+    <p class="eyebrow"><span class="eyebrow-dot"></span> Monsoon Campaign 2025</p>
+    <h1 class="main-headline">
+      <span class="line-white">The rain</span>
+      <span class="line-red">decides</span>
+      <span class="line-blue">your deal</span>
+    </h1>
+    <p class="sub-headline">
+      Today's rain intensity at your location determines your discount.<br>
+      Screenshot your voucher and ride to the nearest Eurogrip store.
+    </p>
+
+    <div id="loadingState">
+      <div class="spinner-ring"></div>
+      <p class="loading-text" id="loadingTxt">Detecting your location…</p>
+    </div>
+
+    <div id="offerState">
+      <div class="offer-card">
+        <div class="card-header">
+          <div class="card-header-left">
+            <span class="live-badge"><span class="live-dot"></span> Live</span>
+            <span class="card-date" id="cardDate"></span>
+          </div>
+          <span class="card-location" id="cardLocation">
+            <svg width="12" height="12" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg> --
+          </span>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-block">
+            <p class="stat-label">Rain today</p>
+            <p class="stat-icon" id="rainIcon">🌧️</p>
+            <p class="stat-sub" id="rainLabel" style="font-size:14px;font-weight:600;color:var(--near-black);margin-top:6px">--</p>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-block">
+            <p class="stat-label">Your discount</p>
+            <p class="stat-num disc" id="discNum">--<span class="stat-unit">%</span></p>
+            <p class="stat-sub">off Eurogrip tyres</p>
+          </div>
+        </div>
+
+        <div class="formula-strip" id="formulaStrip">
+          <strong>Checking conditions…</strong>
+        </div>
+
+        <!-- LEAD CAPTURE GATE -->
+        <div class="lead-section" id="leadSection">
+          <p class="lead-title">Claim your voucher</p>
+          <p class="lead-desc">Enter your details to reveal your discount code.</p>
+          <input class="lead-field" id="leadName" type="text" placeholder="Your full name" autocomplete="name">
+          <p class="lead-error" id="nameError">Please enter your name</p>
+          <input class="lead-field" id="leadPhone" type="tel" placeholder="Mobile number (10 digits)" autocomplete="tel" maxlength="10">
+          <p class="lead-error" id="phoneError">Please enter a valid 10-digit mobile number</p>
+          <button class="lead-submit" onclick="submitLead()">Reveal My Discount →</button>
+        </div>
+
+        <!-- VOUCHER (shown after lead submit) -->
+        <div class="voucher-section" id="voucherSection">
+          <p class="voucher-title">Your voucher</p>
+          <div class="voucher-box">
+            <p class="voucher-greeting" id="voucherGreeting"></p>
+            <p class="voucher-code" id="voucherCode">----</p>
+            <p class="voucher-detail" id="voucherDetail"></p>
+            <div class="screenshot-hint">
+              <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:#fff;stroke-width:2"><path d="M3 9V5a2 2 0 012-2h4M15 3h4a2 2 0 012 2v4M21 15v4a2 2 0 01-2 2h-4M9 21H5a2 2 0 01-2-2v-4"/></svg>
+              Screenshot &amp; show at store
+            </div>
+          </div>
+          <p class="voucher-expire" id="voucherExpire">Valid today only</p>
+        </div>
+
+        <div class="weather-row" id="weatherRow" style="display:none">
+          <div class="w-chip">
+            <svg viewBox="0 0 24 24"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/><circle cx="12" cy="12" r="4"/></svg>
+            <span id="wTemp">--</span>
+          </div>
+          <div class="w-chip">
+            <svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/></svg>
+            <span id="wHumid">--</span>
+          </div>
+          <div class="w-chip">
+            <svg viewBox="0 0 24 24"><path d="M9.59 4.59A2 2 0 1111 8H2m10.59 11.41A2 2 0 1014 16H2m15.73-8.27A2.5 2.5 0 1119.5 12H2"/></svg>
+            <span id="wWind">--</span>
+          </div>
+        </div>
+        <p class="offer-message" id="offerMsg"></p>
+      </div>
+
+      <p class="source-note">
+        <span class="source-dot"></span>
+        Weather data: WeatherAPI.com · Updates every hour
+      </p>
+    </div>
+
+    <div id="errorState">
+      <p style="font-size:2.5rem;margin-bottom:.75rem">📍</p>
+      <p class="error-text">Allow location access to detect today's rain<br>and unlock your Eurogrip discount.</p>
+      <button class="retry-btn" onclick="init()">Try again</button>
+    </div>
+
+  </div>
+</main>
+
+<div class="store-section" id="storeSection" style="display:none"></div>
+
+<footer>
+  
+  <p class="footer-terms">
+    Discount corresponds to the rain intensity at your location on the day of visit.<br>
+    Offer applies to select Eurogrip tyre models. Cannot be combined with other promotions.<br>
+    © 2025 Eurogrip — TVS Srichakra Ltd.
+  </p>
+</footer>
+
+<script>
+// ─── STORES ───────────────────────────────────────────────────────────
+const STORES = [
+  { name:"Eurogrip Exclusive", tag:"COCO", city:"Chennai", area:"Velachery", addr:"Plot 29, 5th St, Tansi Nagar, Service Rd, Velachery 600042", phone:"9500293128", lat:12.9779, lon:80.2236 },
+  { name:"ST Enterprises", city:"Chennai", area:"Villivakkam", addr:"Old 39E / New 103, M.T.H Road, Villivakkam 600049", phone:"9790046655", lat:13.1038, lon:80.2043 },
+  { name:"J.C. Groups", city:"Chennai", area:"Selaiyur", addr:"Plot 3, Agaram Main Road, Selaiyur 600073", phone:"9789815570", lat:12.8953, lon:80.1413 },
+  { name:"S S Pandian Automotive", city:"Chennai", area:"Perambur", addr:"19/27, Ground Floor, MH Road, Perambur 600011", phone:"9677612921", lat:13.1171, lon:80.2424 },
+  { name:"Tyre House", city:"Mysuru", addr:"#618/1C, Chamaraja Double Rd, K.R. Mohalla, Mysuru 570024", phone:"9019561836", lat:12.3001, lon:76.6492 },
+  { name:"Eurogrip Exclusive", tag:"COCO", city:"Ahmedabad", area:"Bodakdev", addr:"HP Petrol Pump, Plot 31, Near Satyagraha Chavni, Bodakdev 380054", phone:"7548850371", lat:23.0387, lon:72.5119 },
+  { name:"Prakash Tyres", city:"Farrukhabad", addr:"Faizbagh Chauraha, Shamshabad, Farrukhabad UP 209503", phone:"9580655655", lat:27.3826, lon:79.5840 },
+  { name:"Hamsika Automobiles", city:"Hyderabad", area:"Madhapur", addr:"Shop 3&4, 100ft Main Rd, Near Meridian School, Madhapur 500081", phone:"9032010099", lat:17.4522, lon:78.3898 },
+  { name:"Shree Shubham Sales & Services", city:"Patna", addr:"Opp. Samrat Petrol Pump, Jakariyapur, M.G. Setu Path, Pahari, Patna 800007", phone:"9031030242", lat:25.5811, lon:85.1907 },
+  { name:"Sun Shine International", city:"Rajkot", area:"Navagam", addr:"Anandpara, Ramji Temple Chowk, Navagam, Rajkot 360001", phone:"9825189024", lat:22.3166, lon:70.8400 }
+];
+
+// ─── RAIN TIER — precipitation-first logic ────────────────────────────
+// We use TOTAL DAILY PRECIPITATION as the primary signal.
+// WMO codes are only used to distinguish "any rain" from "no rain".
+// This avoids Open-Meteo's habit of flagging Indian monsoon days as
+// "thunderstorm" (code 95) even when actual rainfall is light.
+//
+// Tiers:
+//   ≥ 20 mm/day  → Heavy / Thunderstorm → 20% (THUNDER20)
+//   ≥ 8  mm/day  → Rather Heavy Rain    → 15% (RAIN15)
+//   ≥ 2  mm/day  → Moderate Rain        → 10% (MONSOON10)
+//   >  0  mm/day  → Light Rain / Drizzle → 5%  (DRIZZLE5)
+//   == 0          → No rain             → no offer
+
+function getTierFromPrecip(totalPrecipMm, hasAnyRainCode) {
+  if (!hasAnyRainCode && totalPrecipMm < 0.1) return null;
+
+  if (totalPrecipMm >= 20)
+    return { label:'Heavy Rain', disc:20, code:'THUNDER20', icon:'⛈️', rainInt:130, color:'#ed1c24' };
+  if (totalPrecipMm >= 8)
+    return { label:'Rather Heavy Rain', disc:15, code:'RAIN15', icon:'🌧️', rainInt:85, color:'#003d7a' };
+  if (totalPrecipMm >= 2)
+    return { label:'Moderate Rain', disc:10, code:'MONSOON10', icon:'🌦️', rainInt:50, color:'#0054a6' };
+  if (totalPrecipMm > 0 || hasAnyRainCode)
+    return { label:'Light Rain', disc:5, code:'DRIZZLE5', icon:'🌦️', rainInt:20, color:'#1a6fc4' };
+  return null;
+}
+
+// ─── HELPERS ──────────────────────────────────────────────────────────
+function haversine(a, b, c, d) {
+  const R = 6371, dL = (c-a)*Math.PI/180, dN = (d-b)*Math.PI/180;
+  const x = Math.sin(dL/2)**2 + Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dN/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1-x));
+}
+function fmtDist(d) { return d < 1 ? Math.round(d*1000)+' m' : d.toFixed(1)+' km'; }
+function setEl(id, val) { const e = document.getElementById(id); if (e) e.innerHTML = val; }
+function showState(id) {
+  ['loadingState','offerState','errorState'].forEach(s => {
+    document.getElementById(s).style.display = s === id ? 'block' : 'none';
+  });
+}
+function getMessage(disc) {
+  if (disc === 20) return '"Heavy skies, heavy savings — the biggest deal on the road. Ride in now."';
+  if (disc === 15) return '"Heavy rain, heavy savings. Your tyres deserve an upgrade today."';
+  if (disc === 10) return '"The monsoon is here. So is your 10% off — screenshot and ride."';
+  return '"A drizzle is all it takes. Show your screenshot and save 5%."';
+}
+
+// ─── RAIN CANVAS ──────────────────────────────────────────────────────
+let rainStarted = false;
+function startRain(intensity) {
+  if (rainStarted) return;
+  rainStarted = true;
+  const canvas = document.getElementById('rainCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  if (intensity <= 0) return;
+  const drops = [];
+  for (let i = 0; i < Math.floor(intensity * 1.2); i++) {
+    drops.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      speed: 4 + Math.random() * 8,
+      len: 12 + Math.random() * 20,
+      opacity: 0.08 + Math.random() * 0.18
+    });
+  }
+  setTimeout(() => canvas.classList.add('active'), 600);
+  (function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drops.forEach(d => {
+      ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(d.x - 1.5, d.y + d.len);
+      ctx.strokeStyle = `rgba(100,170,255,${d.opacity})`; ctx.lineWidth = 1.2; ctx.stroke();
+      d.y += d.speed;
+      if (d.y > canvas.height) { d.y = -d.len; d.x = Math.random() * canvas.width; }
+    });
+    requestAnimationFrame(draw);
+  })();
+}
+
+// ─── GOOGLE SHEET LEAD SAVE (GET params — works with no-cors) ─────────
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbwEju_oEDm7wgQrarOfblWmGh5Pds02WSokyKLYIA19z4KxUfNyLRI7EQQDi8wye80R/exec';
+// ↑ Replace with your NEW sheet URL after following the setup steps
+
+function saveToSheet(name, phone, tier, city) {
+  const params = new URLSearchParams({
+    name, phone, city,
+    rain_condition: tier.label,
+    discount: tier.disc + '%',
+    voucher_code: tier.code,
+    timestamp: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
+  });
+  fetch(SHEET_URL + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
+    .catch(() => {});
+}
+
+let pendingTier = null;
+let detectedCity = 'your area';
+let detectedLat = 0, detectedLon = 0;
+
+function submitLead() {
+  const name  = document.getElementById('leadName').value.trim();
+  const phone = document.getElementById('leadPhone').value.trim();
+  let valid = true;
+
+  ['nameError','phoneError'].forEach(id => document.getElementById(id).style.display = 'none');
+  document.getElementById('leadName').classList.remove('error');
+  document.getElementById('leadPhone').classList.remove('error');
+
+  if (!name || name.length < 2) {
+    document.getElementById('nameError').style.display = 'block';
+    document.getElementById('leadName').classList.add('error');
+    valid = false;
+  }
+  if (!/^[6-9]\d{9}$/.test(phone)) {
+    document.getElementById('phoneError').style.display = 'block';
+    document.getElementById('leadPhone').classList.add('error');
+    valid = false;
+  }
+  if (!valid || !pendingTier) return;
+
+  saveToSheet(name, phone, pendingTier, detectedCity);
+
+  const firstName = name.split(' ')[0];
+  setEl('voucherGreeting', `Hey <strong>${firstName}</strong>, your voucher:`);
+  document.getElementById('leadSection').style.display    = 'none';
+  document.getElementById('voucherSection').style.display = 'block';
+  document.getElementById('weatherRow').style.display     = 'flex';
+}
+
+// ─── STORE SECTION ────────────────────────────────────────────────────
+function buildStoreSection(lat, lon, tier) {
+  const nearby = STORES
+    .map(s => ({ ...s, dist: haversine(lat, lon, s.lat, s.lon) }))
+    .sort((a, b) => a.dist - b.dist);
+  const storesIn50 = nearby.filter(s => s.dist <= 50);
+  const sec = document.getElementById('storeSection');
+  sec.style.display = 'block';
+
+  if (storesIn50.length > 0) {
+    let html = `<p class="section-label">Eurogrip stores within 50 km</p>`;
+    storesIn50.forEach(s => {
+      html += `<div class="store-card">
+        <div>
+          <p class="store-name">${s.name}${s.tag ? `<span class="coco-tag">${s.tag}</span>` : ''}</p>
+          <p class="store-addr">${s.city}${s.area ? ', '+s.area : ''}<br>${s.addr}</p>
+          <a class="store-phone" href="tel:${s.phone}">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 8.63 19.79 19.79 0 01.03 2.18 2 2 0 012 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 14.07z"/>
+            </svg>
+            ${s.phone}
+          </a>
+        </div>
+        <p class="store-dist">${fmtDist(s.dist)}</p>
+      </div>`;
+    });
+    sec.innerHTML = html;
+  } else {
+    sec.innerHTML = `
+    <p class="section-label">No store within 50 km</p>
+    <div class="ecomm-card">
+      <h3>Shop online &amp; save ${tier.disc}%</h3>
+      <p>No Eurogrip store near you? Use code <strong>${tier.code}</strong> at checkout.</p>
+      <a class="ecomm-btn" href="https://www.eurogriptyres.com" target="_blank">Shop at eurogriptyres.com →</a>
+    </div>
+    <p class="store-cities-note">Our stores: Chennai · Mysuru · Ahmedabad · Hyderabad · Patna · Rajkot · Farrukhabad</p>`;
+  }
+}
+
+// ─── RENDER ───────────────────────────────────────────────────────────
+function renderOffer(lat, lon, city, tier, temp, humid, wind, precipMm) {
+  pendingTier  = tier;
+  detectedCity = city;
+  detectedLat  = lat;
+  detectedLon  = lon;
+
+  const today   = new Date();
+  const dateStr = today.toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+
+  setEl('cardDate', dateStr);
+  setEl('cardLocation',
+    `<svg width="12" height="12" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2" viewBox="0 0 24 24">
+      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+      <circle cx="12" cy="9" r="2.5"/>
+    </svg> ${city}`);
+  setEl('wTemp',  `${temp}°C`);
+  setEl('wHumid', `${humid}% humidity`);
+  setEl('wWind',  `${wind} km/h wind`);
+
+  if (!tier) {
+    setEl('rainIcon',  '☀️');
+    setEl('rainLabel', 'Clear Sky Today');
+    setEl('discNum',   `0<span class="stat-unit">%</span>`);
+    setEl('formulaStrip', '<strong>No rain forecast today — check back when the monsoon arrives!</strong>');
+    setEl('voucherCode',   '—');
+    setEl('voucherDetail', 'No discount active today');
+    setEl('voucherExpire', 'Discounts unlock when it rains');
+    setEl('offerMsg', '"The sun is out. Come back when the monsoon hits for your Eurogrip deal!"');
+    document.getElementById('leadSection').style.display    = 'none';
+    document.getElementById('voucherSection').style.display = 'block';
+    document.getElementById('weatherRow').style.display     = 'flex';
+    startRain(0);
+  } else {
+    setEl('rainIcon',  tier.icon);
+    setEl('rainLabel', tier.label);
+    const discEl = document.getElementById('discNum');
+    discEl.innerHTML   = `${tier.disc}<span class="stat-unit">%</span>`;
+    discEl.style.color = tier.color;
+    setEl('formulaStrip',
+      `<strong>${tier.label} · ${precipMm.toFixed(1)} mm expected today · ${tier.disc}% off Eurogrip tyres</strong>`);
+    setEl('voucherCode',   tier.code);
+    setEl('voucherDetail', `${tier.disc}% off on all Eurogrip tyres`);
+    setEl('voucherExpire',
+      `Valid today only · ${today.toLocaleDateString('en-IN', { day:'numeric', month:'long', year:'numeric' })}`);
+    setEl('offerMsg', getMessage(tier.disc));
+    startRain(tier.rainInt);
+    buildStoreSection(lat, lon, tier);
+  }
+  showState('offerState');
+}
+
+// ─── WEATHER FETCH ────────────────────────────────────────────────────
+async function fetchWeather(lat, lon) {
+  const url =
+    `https://api.open-meteo.com/v1/forecast` +
+    `?latitude=${lat}&longitude=${lon}` +
+    `&hourly=weathercode,precipitation,temperature_2m,relativehumidity_2m,windspeed_10m` +
+    `&daily=precipitation_sum` +
+    `&models=best_match&timezone=auto&forecast_days=1`;
+
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('Weather fetch failed: ' + res.status);
+  const data = await res.json();
+
+  // Total precipitation for the day (mm) — this is the source of truth for tier
+  const totalPrecip = data.daily.precipitation_sum[0] || 0;
+
+  // Check if ANY daytime hour has a rain-category WMO code
+  const rainCodes = [51,53,55,61,63,65,80,81,82,95,96,99];
+  const daytimeCodes = data.hourly.weathercode.slice(6, 22); // 6am–10pm
+  const hasAnyRainCode = daytimeCodes.some(c => rainCodes.includes(c));
+
+  // Midday values for display
+  const temp  = Math.round(data.hourly.temperature_2m[12]);
+  const humid = Math.round(data.hourly.relativehumidity_2m[12]);
+  const wind  = Math.round(data.hourly.windspeed_10m[12]);
+
+  return { totalPrecip, hasAnyRainCode, temp, humid, wind };
+}
+
+async function getCity(lat, lon) {
+  try {
+    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
+    const g = await res.json();
+    return g.address.city || g.address.town || g.address.village || g.address.county || 'your area';
+  } catch (e) { return 'your area'; }
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────
+async function init() {
+  rainStarted = false;
+  document.getElementById('rainCanvas').classList.remove('active');
+  showState('loadingState');
+  setEl('loadingTxt', 'Detecting your location…');
+  document.getElementById('storeSection').style.display    = 'none';
+  document.getElementById('leadSection').style.display     = 'block';
+  document.getElementById('voucherSection').style.display  = 'none';
+  document.getElementById('weatherRow').style.display      = 'none';
+
+  if (!navigator.geolocation) { await initFromIP(); return; }
+
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      try {
+        setEl('loadingTxt', 'Checking the skies above you…');
+        const { latitude: lat, longitude: lon } = pos.coords;
+        const [weather, city] = await Promise.all([fetchWeather(lat, lon), getCity(lat, lon)]);
+        const tier = getTierFromPrecip(weather.totalPrecip, weather.hasAnyRainCode);
+        renderOffer(lat, lon, city, tier, weather.temp, weather.humid, weather.wind, weather.totalPrecip);
+      } catch (e) {
+        console.error('Weather error:', e);
+        await initFromIP();
+      }
+    },
+    async () => { await initFromIP(); },
+    { timeout: 10000, enableHighAccuracy: false }
+  );
+}
+
+async function initFromIP() {
+  try {
+    setEl('loadingTxt', 'Locating via network…');
+    const ipRes  = await fetch('https://ip-api.com/json/?fields=lat,lon,city');
+    const ipData = await ipRes.json();
+    const lat = ipData.lat, lon = ipData.lon;
+    const city = ipData.city || 'your area';
+    setEl('loadingTxt', 'Checking the skies above you…');
+    const weather = await fetchWeather(lat, lon);
+    const tier    = getTierFromPrecip(weather.totalPrecip, weather.hasAnyRainCode);
+    renderOffer(lat, lon, city, tier, weather.temp, weather.humid, weather.wind, weather.totalPrecip);
+  } catch (e) {
+    console.error('IP fallback error:', e);
+    showState('errorState');
+  }
+}
+
+window.addEventListener('resize', () => {
+  const c = document.getElementById('rainCanvas');
+  c.width = window.innerWidth; c.height = window.innerHeight;
+});
+
+init();
+</script>
+</body>
+</html>
